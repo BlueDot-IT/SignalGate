@@ -13,12 +13,19 @@ class SQLiteKV:
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self._lock = threading.Lock()
         with sqlite3.connect(str(self.path), timeout=10) as db:
-            db.execute("create table if not exists kv (namespace text, name text, value text, primary key(namespace, name))")
+            db.execute(
+                "create table if not exists kv ("
+                "namespace text, name text, value text, "
+                "primary key(namespace, name))"
+            )
             db.commit()
 
     def get_json(self, namespace: str, name: str) -> dict[str, Any] | None:
         with self._lock, sqlite3.connect(str(self.path), timeout=10) as db:
-            row = db.execute("select value from kv where namespace = ? and name = ?", (namespace, name)).fetchone()
+            row = db.execute(
+                "select value from kv where namespace = ? and name = ?",
+                (namespace, name),
+            ).fetchone()
         if not row:
             return None
         try:
@@ -30,5 +37,8 @@ class SQLiteKV:
         payload = json.dumps(value, sort_keys=True, separators=(",", ":"))
         with self._lock, sqlite3.connect(str(self.path), timeout=10) as db:
             db.execute("delete from kv where namespace = ? and name = ?", (namespace, name))
-            db.execute("insert into kv(namespace, name, value) values (?, ?, ?)", (namespace, name, payload))
+            db.execute(
+                "insert into kv(namespace, name, value) values (?, ?, ?)",
+                (namespace, name, payload),
+            )
             db.commit()

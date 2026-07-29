@@ -32,7 +32,13 @@ def norm(values: list[float]) -> np.ndarray:
     return arr if n == 0 else arr / n
 
 
-def final_label(raw: str, top1: float, margin: float, sim_threshold: float, margin_threshold: float) -> str:
+def final_label(
+    raw: str,
+    top1: float,
+    margin: float,
+    sim_threshold: float,
+    margin_threshold: float,
+) -> str:
     if top1 < sim_threshold or margin < margin_threshold:
         return "balanced"
     return raw
@@ -52,7 +58,11 @@ def evaluate(path: Path, sim_threshold: float, margin_threshold: float) -> dict[
         tmp.write_text("\n".join(json.dumps(x) for x in train_rows) + "\n", encoding="utf-8")
         try:
             clf = KNNTierClassifier.from_jsonl(tmp)
-            pred = clf.predict(norm(row["embedding"]), sim_threshold=sim_threshold, margin_threshold=margin_threshold)
+            pred = clf.predict(
+                norm(row["embedding"]),
+                sim_threshold=sim_threshold,
+                margin_threshold=margin_threshold,
+            )
             got = final_label(pred.tier, pred.top1, pred.margin, sim_threshold, margin_threshold)
         finally:
             tmp.unlink(missing_ok=True)

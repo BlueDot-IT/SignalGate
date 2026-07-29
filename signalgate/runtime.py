@@ -28,11 +28,16 @@ class LoadedArtifacts:
         mh = stable_hash(self.manifest_raw)[:12]
         dataset_hash = _optional_file_hash(self.config.paths.knn_dataset_path)
         embedder_marker = self.config.paths.embedding_model_path or ""
-        cls_state = "enabled" if self.config_raw.get("classifier", {}).get("enabled") else "disabled"
+        cls_state = (
+            "enabled"
+            if self.config_raw.get("classifier", {}).get("enabled")
+            else "disabled"
+        )
         return (
             f"code={__version__};config={self.config.version};"
             f"manifest={manifest_version};manifest_hash={mh};"
-            f"classifier={cls_state};dataset_hash={dataset_hash};embedder={stable_hash(embedder_marker)[:12]}"
+            f"classifier={cls_state};dataset_hash={dataset_hash};"
+            f"embedder={stable_hash(embedder_marker)[:12]}"
         )
 
 
