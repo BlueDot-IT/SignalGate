@@ -23,4 +23,4 @@ jobs:
       - run: uv run ruff check .
       - run: uv run pytest -m "not e2e" -ra
       - run: uv build
-      - run: cd dist && sha256sum * > SHA256SUMS
+      - run: cd dist && sha256sum -- * > SHA256SUMS
