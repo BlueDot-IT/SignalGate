@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import pytest
 
+from signalgate.client_sanitize import sanitize_for_client
 from signalgate.errors import SGError
 from signalgate.security import (
     SecurityConfig,
@@ -9,6 +10,23 @@ from signalgate.security import (
     maybe_forward_user,
     tokens_equal,
 )
+
+
+def test_client_sanitizer_removes_nested_debug_data() -> None:
+    sanitized = sanitize_for_client(
+        {
+            "message": "safe",
+            "details": [
+                {"stack_trace": "private", "reason": "still safe"},
+                'Traceback (most recent call last): private',
+            ],
+        }
+    )
+
+    assert sanitized == {
+        "message": "safe",
+        "details": [{"reason": "still safe"}, "redacted"],
+    }
 
 
 def test_tokens_equal_accepts_only_exact_match() -> None:

@@ -1,6 +1,4 @@
-FROM gcr.io/oss-fuzz-base/base-builder-python:v1
-RUN python3 -m pip install --upgrade pip
-RUN python3 -m pip install numpy==2.0.0
+FROM gcr.io/oss-fuzz-base/base-builder-python:v1@sha256:6b2b3a7e4a2da50de47f94925cffbe34747e1aae4f33d7f07ba6c681dd648b23
 COPY . $SRC/SignalGate
 WORKDIR $SRC/SignalGate
 COPY .clusterfuzzlite/build.sh $SRC/build.sh
