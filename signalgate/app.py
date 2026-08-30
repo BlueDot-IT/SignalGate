@@ -15,6 +15,7 @@ from fastapi.responses import JSONResponse
 from .budgets import BudgetManager
 from .canary import CanaryConfig, is_canary_user
 from .classifier import KNNTierClassifier
+from .client_sanitize import sanitize_for_client
 from .costing import compute_cost, savings_percent
 from .embeddings import Embedder, build_embedder
 from .errors import SGError, sg_bad_request, sg_payload_too_large, sg_queue_full, sg_unauthorized
@@ -37,55 +38,6 @@ from .util import stable_hash
 from .version import __version__
 
 logger = logging.getLogger("signalgate")
-
-
-_STACKTRACE_MARKERS = (
-    'Traceback (most recent call last):',
-    '  File "',
-)
-
-_BANNED_ERROR_KEYS = {
-    'trace',
-    'traceback',
-    'stack',
-    'stacktrace',
-    'stack_trace',
-    'exc',
-    'exception',
-    'exc_info',
-    'debug_trace',
-    'decision_trace',
-}
-
-
-def _sanitize_for_client(obj: Any) -> Any:
-    """Best-effort scrubber to prevent leaking stack traces or internal debug fields."""
-
-    if obj is None:
-        return None
-
-    if isinstance(obj, str):
-        if any(m in obj for m in _STACKTRACE_MARKERS):
-            return 'redacted'
-        return obj
-
-    if isinstance(obj, (int, float, bool)):
-        return obj
-
-    if isinstance(obj, list):
-        return [_sanitize_for_client(x) for x in obj]
-
-    if isinstance(obj, dict):
-        out: dict[Any, Any] = {}
-        for k, v in obj.items():
-            ks = str(k).lower()
-            if ks in _BANNED_ERROR_KEYS:
-                continue
-            out[k] = _sanitize_for_client(v)
-        return out
-
-    # Fallback for unknown types
-    return str(obj)
 
 
 def _percentile(values: list[int], pct: float) -> int | None:
@@ -426,7 +378,7 @@ def create_app() -> FastAPI:
                 },
             },
         }
-        return JSONResponse(status_code=exc.status_code, content=_sanitize_for_client(body))
+        return JSONResponse(status_code=exc.status_code, content=sanitize_for_client(body))
 
     @app.exception_handler(Exception)
     async def _unhandled_exception_handler(_req: Request, exc: Exception):
@@ -461,7 +413,7 @@ def create_app() -> FastAPI:
                 },
             },
         }
-        return JSONResponse(status_code=500, content=_sanitize_for_client(body))
+        return JSONResponse(status_code=500, content=sanitize_for_client(body))
 
     @app.get("/healthz")
     async def healthz():

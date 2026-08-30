@@ -7,7 +7,7 @@ import atheris
 # Ensure local imports work if the package install fails.
 sys.path.insert(0, os.getcwd())
 
-from signalgate.app import _sanitize_for_client  # noqa: E402
+from signalgate.client_sanitize import sanitize_for_client  # noqa: E402
 
 
 def TestOneInput(data: bytes) -> None:
@@ -17,7 +17,7 @@ def TestOneInput(data: bytes) -> None:
     except Exception:
         return
 
-    _sanitize_for_client(obj)
+    sanitize_for_client(obj)
 
 
 def main() -> None:
