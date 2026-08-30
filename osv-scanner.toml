@@ -1,0 +1,4 @@
+[[IgnoredVulns]]
+id = "PYSEC-2026-2447"
+ignoreUntil = 2026-10-31
+reason = "DiskCache is reachable only through the optional embed extra; it is absent from the default dependency set and runtime image, and SignalGate does not enable the vulnerable cache path. Tracked in issue #15."
